@@ -1,0 +1,27 @@
+{
+  "name": "rpg-helper-bot",
+  "version": "1.0.0",
+  "description": "Telegram Bot that helps running a table top rpg",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hoi15A/rpg-helper-bot.git"
+  },
+  "keywords": [
+    "telegram-bot",
+    "telegram",
+    "javascript",
+    "rpg",
+    "tabletop"
+  ],
+  "author": "Austin Albrecht",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Hoi15A/rpg-helper-bot/issues"
+  },
+  "homepage": "https://github.com/Hoi15A/rpg-helper-bot#readme"
+}
