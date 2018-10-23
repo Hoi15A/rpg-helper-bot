@@ -1,0 +1,9 @@
+telegram:
+  token: "<token>"
+  useWebhook: false # if set to false no webserver is started and the bot polls instead
+webserver:
+  webhookDev: 'https://dev.example.com'
+  webhookProd: 'https://example.com'
+  port: 3000
+env:
+  isProd: false # Switches which webhook is used
