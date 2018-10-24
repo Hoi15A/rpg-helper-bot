@@ -11,23 +11,18 @@ bot.telegram.getMe().then((botInfo) => {
   bot.options.username = botInfo.username
 })
 
-bot.command('players', ({ reply }) => {
-  return reply('Select a player: ',
+bot.command('players', (ctx, next) => {
+  return ctx.reply('Select a player: ',
     Markup.inlineKeyboard([
       [
-        Markup.callbackButton('Player 1', 'p1'),
-        Markup.callbackButton('Player 2', 'p2'),
-        Markup.callbackButton('Player 3', 'p3')
+        Markup.callbackButton('Lucius', 'p1'),
+        Markup.callbackButton('Player 2', 'other'),
+        Markup.callbackButton('Player 3', 'other')
       ],
       [
-        Markup.callbackButton('Player 4', 'p4'),
-        Markup.callbackButton('Player 5', 'p5'),
-        Markup.callbackButton('Player 6', 'p6')
-      ],
-      [
-        Markup.callbackButton('Player 7', 'p7'),
-        Markup.callbackButton('Player 8', 'p8'),
-        Markup.callbackButton('Player 9', 'p9')
+        Markup.callbackButton('Player 4', 'other'),
+        Markup.callbackButton('Player 5', 'other'),
+        Markup.callbackButton('Player 6', 'other')
       ]
     ]).extra()
   )
@@ -35,7 +30,43 @@ bot.command('players', ({ reply }) => {
 
 bot.action('p1', (ctx, next) => {
   ctx.answerCbQuery('P1 Selected')
-  return ctx.reply('_p1 stats here_').then(() => next())
+  return ctx.replyWithPhoto({ 'source': './assets/placeholder-sheet.png' },
+    Markup.inlineKeyboard([
+      [
+        Markup.callbackButton('Alter stats', 'alterstats'),
+        Markup.callbackButton('More Details', 'other')
+      ],
+      [
+        Markup.callbackButton('Spells', 'other'),
+        Markup.callbackButton('Moves', 'other')
+      ]
+    ]).extra()).then(() => {
+    ctx.deleteMessage()
+    next()
+  })
+})
+
+bot.action('alterstats', (ctx, next) => {
+  ctx.answerCbQuery('Altering stats')
+  return ctx.reply('Which stat do you want to alter?',
+    Markup.inlineKeyboard([
+      [
+        Markup.callbackButton('Strength', 'other'),
+        Markup.callbackButton('Defense', 'other')
+      ],
+      [
+        Markup.callbackButton('Intelligence', 'other'),
+        Markup.callbackButton('Moves', 'other')
+      ]
+    ]).extra()).then(() => {
+    ctx.deleteMessage()
+    next()
+  })
+})
+
+bot.action('other', (ctx, next) => {
+  ctx.answerCbQuery('Did stuff')
+  return ctx.reply('lul no I didnt make the other buttons do stuff').then(() => next())
 })
 
 // Set up connection to api according to config
