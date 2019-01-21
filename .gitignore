@@ -1,6 +1,9 @@
 # Config file
 config.yml
 
+# DB
+db.json
+
 # Created by https://www.gitignore.io/api/vim,node,linux,windows
 
 ### Linux ###

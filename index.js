@@ -1,4 +1,5 @@
 const base = require('./lib/base.js')
+const storage = require('./lib/storage.js')
 const webServer = require('./lib/webserver.js')
 const webhookPath = '/wh-' + require('crypto').randomBytes(8).toString('hex')
 const config = base.getConfig()
@@ -15,13 +16,24 @@ bot.telegram.getMe().then((botInfo) => {
   bot.options.username = botInfo.username
 })
 
-const { setupScene } = require('./scenes/setup.js')
+const { newPlayerScene } = require('./scenes/newPlayer.js')
 const { rollScene } = require('./scenes/roll.js')
 
-const stage = new Stage([setupScene, rollScene])
+const stage = new Stage([newPlayerScene, rollScene])
 bot.use(session())
 bot.use(stage.middleware())
 // bot.command('x', enter('setup'))
+/*
+bot.command('set', ctx => {
+  storage.set(ctx.update.message.chat.id, ctx.update.message.text).then(() => {
+    ctx.reply('Done')
+  })
+})
+
+bot.command('get', ctx => {
+  let data = storage.get(ctx.update.message.chat.id)
+  ctx.reply(JSON.stringify(data))
+}) */
 
 bot.command('start', (ctx, next) => {
   return ctx.reply('Main Menu: ',
@@ -29,7 +41,7 @@ bot.command('start', (ctx, next) => {
       [
         Markup.callbackButton('Show Player', 'p1'),
         Markup.callbackButton('Edit Player', 'other'),
-        Markup.callbackButton('New Player', 'other')
+        Markup.callbackButton('New Player', 'newPlayer')
       ],
       [
         Markup.callbackButton('Roll 🎲', 'roll'),
@@ -42,6 +54,11 @@ bot.command('start', (ctx, next) => {
 bot.action('roll', (ctx, next) => {
   ctx.answerCbQuery('Roll Menu')
   ctx.scene.enter('roll')
+})
+
+bot.action('newPlayer', (ctx, next) => {
+  ctx.answerCbQuery('Entering Setup')
+  ctx.scene.enter('newPlayer')
 })
 
 // Set up connection to api according to config
