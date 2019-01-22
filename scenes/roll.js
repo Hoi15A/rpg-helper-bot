@@ -35,6 +35,7 @@ function basicRollAction (ctx, num) {
   leave()
 }
 
+// TODO: (very low priority) /d[0-9]+/ instead of this copy paste shit
 rollScene.action('d4', (ctx, next) => {
   basicRollAction(ctx, 4)
 })
