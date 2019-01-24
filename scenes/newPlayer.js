@@ -18,7 +18,7 @@ newPlayerScene.enter((ctx) => {
     'armor': 0,
     'initiative': 0,
     'speed': 0,
-    'baseStats': {
+    'baseStats': { // Formula for modifiers: Math.floor((stat - 10) / 2)
       'str': 0, // Strength: 0-99
       'dex': 0, // Dexterity: 0-99
       'con': 0, // Constitution: 0-99
@@ -27,24 +27,24 @@ newPlayerScene.enter((ctx) => {
       'chr': 0 // Charisma: 0-99
     },
     'skills': { // or proficiencies
-      'acrobatics': { 'enabled': false, 'val': 0, 'label': 'Acrobatics' },
-      'animalHandling': { 'enabled': false, 'val': 0, 'label': 'Animal Handling' },
-      'arcana': { 'enabled': false, 'val': 0, 'label': 'Arcana' },
-      'athletics': { 'enabled': false, 'val': 0, 'label': 'Athletics' },
-      'deception': { 'enabled': false, 'val': 0, 'label': 'Deception' },
-      'history': { 'enabled': false, 'val': 0, 'label': 'History' },
-      'insight': { 'enabled': false, 'val': 0, 'label': 'Insight' },
-      'intimidation': { 'enabled': false, 'val': 0, 'label': 'Intimidation' },
-      'investigation': { 'enabled': false, 'val': 0, 'label': 'Investigation' },
-      'medicine': { 'enabled': false, 'val': 0, 'label': 'Medicine' },
-      'nature': { 'enabled': false, 'val': 0, 'label': 'Nature' },
-      'perception': { 'enabled': false, 'val': 0, 'label': 'Perception' },
-      'performance': { 'enabled': false, 'val': 0, 'label': 'Performance' },
-      'persuasion': { 'enabled': false, 'val': 0, 'label': 'Persuasion' },
-      'religion': { 'enabled': false, 'val': 0, 'label': 'Religion' },
-      'sleightOfHand': { 'enabled': false, 'val': 0, 'label': 'Sleight Of Hand' },
-      'stealth': { 'enabled': false, 'val': 0, 'label': 'Stealth' },
-      'survival': { 'enabled': false, 'val': 0, 'label': 'Survival' }
+      'acrobatics': { 'enabled': false, 'val': 0, 'label': 'Acrobatics (Dex)' },
+      'animalHandling': { 'enabled': false, 'val': 0, 'label': 'Animal Handling (Wis)' },
+      'arcana': { 'enabled': false, 'val': 0, 'label': 'Arcana (Int)' },
+      'athletics': { 'enabled': false, 'val': 0, 'label': 'Athletics (Str)' },
+      'deception': { 'enabled': false, 'val': 0, 'label': 'Deception (Cha)' },
+      'history': { 'enabled': false, 'val': 0, 'label': 'History (Int)' },
+      'insight': { 'enabled': false, 'val': 0, 'label': 'Insight (Wis)' },
+      'intimidation': { 'enabled': false, 'val': 0, 'label': 'Intimidation (Cha)' },
+      'investigation': { 'enabled': false, 'val': 0, 'label': 'Investigation (Int)' },
+      'medicine': { 'enabled': false, 'val': 0, 'label': 'Medicine (Wis)' },
+      'nature': { 'enabled': false, 'val': 0, 'label': 'Nature (Int)' },
+      'perception': { 'enabled': false, 'val': 0, 'label': 'Perception (Wis)' },
+      'performance': { 'enabled': false, 'val': 0, 'label': 'Performance (Cha)' },
+      'persuasion': { 'enabled': false, 'val': 0, 'label': 'Persuasion (Cha)' },
+      'religion': { 'enabled': false, 'val': 0, 'label': 'Religion (Int)' },
+      'sleightOfHand': { 'enabled': false, 'val': 0, 'label': 'Sleight Of Hand (Dex)' },
+      'stealth': { 'enabled': false, 'val': 0, 'label': 'Stealth (Dex)' },
+      'survival': { 'enabled': false, 'val': 0, 'label': 'Survival (Wis)' }
     },
     'notepad': '' // string of arbitrary text (limit to like 1k chars)
   }
@@ -63,9 +63,9 @@ newPlayerScene.on('text', (ctx) => {
         ctx.session.newPlayer.name = ctx.message.text
         console.log('name set as', ctx.message.text)
         ctx.session.nextEntry = ''
-        ctx.reply('Select Race:',
+        ctx.reply('Hello ' + ctx.message.text + '!\nSelect a Race:',
           Markup.inlineKeyboard([
-            [// Dragonborn, Dwarf, Elf, Gnome, Half-Elf, Halfling, Half-Orc, Human, Tiefling
+            [
               Markup.callbackButton('Dragonborn', 'race-dragonborn'),
               Markup.callbackButton('Dwarf', 'race-dwarf'),
               Markup.callbackButton('Elf', 'race-elf')
@@ -84,6 +84,46 @@ newPlayerScene.on('text', (ctx) => {
         )
       } else {
         ctx.replyWithMarkdown('Sorry, that name is a bit too long.\nPlease enter a shorter one:')
+      }
+      break
+    case 'lvlEtc':
+      let lvlEtcValidator = RegExp('^([0-9]{1,2} ){3}([0-9]{1,2})$', 'm')
+      if (lvlEtcValidator.test(ctx.message.text)) {
+        let lvlEtcValues = ctx.message.text.split(' ')
+        ctx.session.newPlayer.level = lvlEtcValues[0]
+        ctx.session.newPlayer.armor = lvlEtcValues[1]
+        ctx.session.newPlayer.initiative = lvlEtcValues[2]
+        ctx.session.newPlayer.speed = lvlEtcValues[3]
+        ctx.replyWithMarkdown('Nice!\n\nNext please enter the following base stat values separated by spaces:\n1. Strength\n2. Dexterity\n3. Constitution\n4. Intelligence\n5. Wisdom\n6. Charisma\n\nExample: `3 4 2 11 9 3`')
+        ctx.session.nextEntry = 'baseStats'
+      } else {
+        ctx.replyWithMarkdown('Sorry your message was invalid. Please send your message in the following format:\n`1 12 5 3`').then(x => {
+          setTimeout(function () {
+            ctx.tg.deleteMessage(x.chat.id, x.message_id)
+          }, 20000)
+        })
+      }
+      break
+    case 'baseStats':
+      let statValidator = RegExp('^([0-9]{1,2} ){5}([0-9]{1,2})$', 'm')
+      if (statValidator.test(ctx.message.text)) {
+        let statValues = ctx.message.text.split(' ')
+        ctx.session.newPlayer.baseStats.str = statValues[0]
+        ctx.session.newPlayer.baseStats.dex = statValues[1]
+        ctx.session.newPlayer.baseStats.con = statValues[2]
+        ctx.session.newPlayer.baseStats.int = statValues[3]
+        ctx.session.newPlayer.baseStats.wis = statValues[4]
+        ctx.session.newPlayer.baseStats.chr = statValues[5]
+        ctx.replyWithMarkdown('Nice! now all you gotta do is complete the upcoming input hell:')
+
+        // TODO NEXT
+        // somehow do proficiency input
+      } else {
+        ctx.replyWithMarkdown('Sorry your message was invalid. Please send your message in the following format:\n`3 4 2 11 9 3`').then(x => {
+          setTimeout(function () {
+            ctx.tg.deleteMessage(x.chat.id, x.message_id)
+          }, 20000)
+        })
       }
       break
     default:
@@ -130,9 +170,11 @@ newPlayerScene.action(/class-.+/, (ctx) => {
   ctx.deleteMessage()
   let match = ctx.match[0]
   match = match.replace(/class-/, '')
-  console.log(match)
-  ctx.session.newPlayer.race = match
+  ctx.session.newPlayer.class = match
   ctx.answerCbQuery('Class selected.')
+
+  ctx.replyWithMarkdown('Class selected!\n\nPlease enter the following values all at once separated by spaces:\n1. Level\n2. Armor\n3. Initiative\n4. Speed\n\nExample: `1 12 5 3`')
+  ctx.session.nextEntry = 'lvlEtc'
 })
 
 exports.newPlayerScene = newPlayerScene
