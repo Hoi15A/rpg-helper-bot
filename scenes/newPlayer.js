@@ -1,3 +1,5 @@
+const storage = require('../lib/storage.js')
+
 const Markup = require('telegraf/markup')
 const Scene = require('telegraf/scenes/base')
 const Stage = require('telegraf/stage')
@@ -27,26 +29,34 @@ newPlayerScene.enter((ctx) => {
       'chr': 0 // Charisma: 0-99
     },
     'skills': { // or proficiencies
-      'acrobatics': { 'enabled': false, 'val': 0, 'label': 'Acrobatics (Dex)' },
-      'animalHandling': { 'enabled': false, 'val': 0, 'label': 'Animal Handling (Wis)' },
-      'arcana': { 'enabled': false, 'val': 0, 'label': 'Arcana (Int)' },
-      'athletics': { 'enabled': false, 'val': 0, 'label': 'Athletics (Str)' },
-      'deception': { 'enabled': false, 'val': 0, 'label': 'Deception (Cha)' },
-      'history': { 'enabled': false, 'val': 0, 'label': 'History (Int)' },
-      'insight': { 'enabled': false, 'val': 0, 'label': 'Insight (Wis)' },
-      'intimidation': { 'enabled': false, 'val': 0, 'label': 'Intimidation (Cha)' },
-      'investigation': { 'enabled': false, 'val': 0, 'label': 'Investigation (Int)' },
-      'medicine': { 'enabled': false, 'val': 0, 'label': 'Medicine (Wis)' },
-      'nature': { 'enabled': false, 'val': 0, 'label': 'Nature (Int)' },
-      'perception': { 'enabled': false, 'val': 0, 'label': 'Perception (Wis)' },
-      'performance': { 'enabled': false, 'val': 0, 'label': 'Performance (Cha)' },
-      'persuasion': { 'enabled': false, 'val': 0, 'label': 'Persuasion (Cha)' },
-      'religion': { 'enabled': false, 'val': 0, 'label': 'Religion (Int)' },
-      'sleightOfHand': { 'enabled': false, 'val': 0, 'label': 'Sleight Of Hand (Dex)' },
-      'stealth': { 'enabled': false, 'val': 0, 'label': 'Stealth (Dex)' },
-      'survival': { 'enabled': false, 'val': 0, 'label': 'Survival (Wis)' }
+      'acrobatics': { 'val': 0, 'label': 'Acrobatics (Dex)' },
+      'animalHandling': { 'val': 0, 'label': 'Animal Handling (Wis)' },
+      'arcana': { 'val': 0, 'label': 'Arcana (Int)' },
+      'athletics': { 'val': 0, 'label': 'Athletics (Str)' },
+      'deception': { 'val': 0, 'label': 'Deception (Cha)' },
+      'history': { 'val': 0, 'label': 'History (Int)' },
+      'insight': { 'val': 0, 'label': 'Insight (Wis)' },
+      'intimidation': { 'val': 0, 'label': 'Intimidation (Cha)' },
+      'investigation': { 'val': 0, 'label': 'Investigation (Int)' },
+      'medicine': { 'val': 0, 'label': 'Medicine (Wis)' },
+      'nature': { 'val': 0, 'label': 'Nature (Int)' },
+      'perception': { 'val': 0, 'label': 'Perception (Wis)' },
+      'performance': { 'val': 0, 'label': 'Performance (Cha)' },
+      'persuasion': { 'val': 0, 'label': 'Persuasion (Cha)' },
+      'religion': { 'val': 0, 'label': 'Religion (Int)' },
+      'sleightOfHand': { 'val': 0, 'label': 'Sleight Of Hand (Dex)' },
+      'stealth': { 'val': 0, 'label': 'Stealth (Dex)' },
+      'survival': { 'val': 0, 'label': 'Survival (Wis)' }
     },
     'notepad': '' // string of arbitrary text (limit to like 1k chars)
+  }
+
+  ctx.session.skillList = []
+  ctx.session.skillIndex = 0
+  for (var v in ctx.session.newPlayer.skills) {
+    if (ctx.session.newPlayer.skills.hasOwnProperty(v)) {
+      ctx.session.skillList.push(v)
+    }
   }
 })
 newPlayerScene.leave((ctx) => ctx.reply('Exited setup'))
@@ -56,12 +66,10 @@ newPlayerScene.command('cancel', (ctx) => {
 })
 
 newPlayerScene.on('text', (ctx) => {
-  console.log(ctx.session.nextEntry)
   switch (ctx.session.nextEntry) {
     case 'name':
       if (ctx.message.text.length <= 20) {
         ctx.session.newPlayer.name = ctx.message.text
-        console.log('name set as', ctx.message.text)
         ctx.session.nextEntry = ''
         ctx.reply('Hello ' + ctx.message.text + '!\nSelect a Race:',
           Markup.inlineKeyboard([
@@ -114,10 +122,9 @@ newPlayerScene.on('text', (ctx) => {
         ctx.session.newPlayer.baseStats.int = statValues[3]
         ctx.session.newPlayer.baseStats.wis = statValues[4]
         ctx.session.newPlayer.baseStats.chr = statValues[5]
-        ctx.replyWithMarkdown('Nice! now all you gotta do is complete the upcoming input hell:')
 
-        // TODO NEXT
-        // somehow do proficiency input
+        ctx.replyWithMarkdown('Nice!\n\nNext enter the proficiencies as numbers. If you set a value to 0 the proficiency is considered not active.\n\nEnter a value for Acrobatics (Dex):')
+        ctx.session.nextEntry = 'proficiencies'
       } else {
         ctx.replyWithMarkdown('Sorry your message was invalid. Please send your message in the following format:\n`3 4 2 11 9 3`').then(x => {
           setTimeout(function () {
@@ -126,8 +133,53 @@ newPlayerScene.on('text', (ctx) => {
         })
       }
       break
+    case 'proficiencies':
+      let profValidator = RegExp('^[0-9]{1,2}$', 'm')
+      if (profValidator.test(ctx.message.text)) {
+        let currProf = ctx.session.skillList[ctx.session.skillIndex]
+        ctx.session.newPlayer.skills[currProf].val = ctx.message.text
+
+        if (ctx.session.skillList.length === ctx.session.skillIndex + 1) {
+          ctx.session.nextEntry = 'notepad'
+          ctx.replyWithMarkdown('Lastly, enter anything else you would like to have stored in your notepad (4000 character limit):')
+          break
+        }
+        ctx.session.skillIndex++
+        let nextSkill = ctx.session.skillList[ctx.session.skillIndex]
+        ctx.replyWithMarkdown('Now enter a number for ' + ctx.session.newPlayer.skills[nextSkill].label)
+      } else {
+        ctx.replyWithMarkdown('Sorry your message was invalid. Please send your message in the following format:\n`2` or `41`').then(x => {
+          setTimeout(function () {
+            ctx.tg.deleteMessage(x.chat.id, x.message_id)
+          }, 20000)
+        })
+      }
+      break
+    case 'notepad':
+      // 4000 char limit
+      if (ctx.message.text.length < 4050) {
+        ctx.session.newPlayer.notepad = ctx.message.text
+        let player = ctx.session.newPlayer
+        let data = storage.get(ctx.update.message.chat.id)
+        if (data === undefined) {
+          data = [player]
+        } else {
+          data.push(player)
+        }
+        storage.set(ctx.update.message.chat.id, data).then(() => {
+          ctx.replyWithMarkdown('That\'s it!')
+          leave()
+        })
+      } else {
+        ctx.replyWithMarkdown('Its nice that you have so much to say, but sadly its above the 4000 character limit. Please shorten your text:').then(x => {
+          setTimeout(function () {
+            ctx.tg.deleteMessage(x.chat.id, x.message_id)
+          }, 20000)
+        })
+      }
+      break
     default:
-      console.log('Ignoring: ', ctx.session.nextEntry)
+      // do nothing
   }
   // ctx.reply('Recieved: ' + ctx.message.text)
 })
@@ -136,7 +188,6 @@ newPlayerScene.action(/race-.+/, (ctx) => {
   ctx.deleteMessage()
   let match = ctx.match[0]
   match = match.replace(/race-/, '')
-  console.log(match)
   ctx.session.newPlayer.race = match
   ctx.answerCbQuery('Race selected.')
 

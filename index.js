@@ -1,5 +1,4 @@
 const base = require('./lib/base.js')
-const storage = require('./lib/storage.js')
 const webServer = require('./lib/webserver.js')
 const webhookPath = '/wh-' + require('crypto').randomBytes(8).toString('hex')
 const config = base.getConfig()
