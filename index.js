@@ -17,8 +17,9 @@ bot.telegram.getMe().then((botInfo) => {
 
 const { newPlayerScene } = require('./scenes/newPlayer.js')
 const { rollScene } = require('./scenes/roll.js')
+const { deletePlayerScene } = require('./scenes/deletePlayer.js')
 
-const stage = new Stage([newPlayerScene, rollScene])
+const stage = new Stage([newPlayerScene, deletePlayerScene, rollScene])
 bot.use(session())
 bot.use(stage.middleware())
 // bot.command('x', enter('setup'))
@@ -39,8 +40,11 @@ bot.command('start', (ctx, next) => {
     Markup.inlineKeyboard([
       [
         Markup.callbackButton('Show Player', 'p1'),
-        Markup.callbackButton('Edit Player', 'other'),
-        Markup.callbackButton('New Player', 'newPlayer')
+        Markup.callbackButton('Edit Player', 'other')
+      ],
+      [
+        Markup.callbackButton('New Player', 'newPlayer'),
+        Markup.callbackButton('Delete Player', 'deletePlayer')
       ],
       [
         Markup.callbackButton('Roll 🎲', 'roll'),
@@ -58,6 +62,11 @@ bot.action('roll', (ctx, next) => {
 bot.action('newPlayer', (ctx, next) => {
   ctx.answerCbQuery('Entering Setup')
   ctx.scene.enter('newPlayer')
+})
+
+bot.action('deletePlayer', (ctx, next) => {
+  ctx.answerCbQuery('Entering Delete')
+  ctx.scene.enter('deletePlayer')
 })
 
 // Set up connection to api according to config
