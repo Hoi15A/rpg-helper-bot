@@ -59,7 +59,7 @@ newPlayerScene.enter((ctx) => {
     }
   }
 })
-newPlayerScene.leave((ctx) => ctx.reply('Exited setup'))
+// newPlayerScene.leave((ctx) => ctx.reply('Exited setup'))
 newPlayerScene.command('cancel', (ctx) => {
   ctx.session.nextEntry = ''
   leave()
@@ -169,6 +169,19 @@ newPlayerScene.on('text', (ctx) => {
         storage.set(ctx.update.message.chat.id, data).then(() => {
           ctx.replyWithMarkdown('That\'s it!')
           leave()
+          ctx.reply('Main Menu: ',
+            Markup.inlineKeyboard([
+              [
+                Markup.callbackButton('Show Player', 'p1'),
+                Markup.callbackButton('Edit Player', 'other'),
+                Markup.callbackButton('New Player', 'newPlayer')
+              ],
+              [
+                Markup.callbackButton('Roll 🎲', 'roll'),
+                Markup.callbackButton('Search for stuff', 'other')
+              ]
+            ]).extra()
+          )
         })
       } else {
         ctx.replyWithMarkdown('Its nice that you have so much to say, but sadly its above the 4000 character limit. Please shorten your text:').then(x => {
