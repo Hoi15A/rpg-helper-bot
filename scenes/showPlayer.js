@@ -191,7 +191,7 @@ showPlayerScene.action(/display-.+/, (ctx) => {
         console.log(currPlayer.skills)
         for (var skill in currPlayer.skills) {
           if (currPlayer.skills.hasOwnProperty(skill)) {
-            if (currPlayer.skills[skill].val && displaySkills.length < 9) {
+            if (parseInt(currPlayer.skills[skill].val) !== 0 && displaySkills.length < 9) {
               displaySkills.push([currPlayer.skills[skill].val, currPlayer.skills[skill].label])
             }
           }
