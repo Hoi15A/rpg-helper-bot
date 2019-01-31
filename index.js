@@ -23,23 +23,13 @@ bot.telegram.getMe().then((botInfo) => {
 const { newPlayerScene } = require('./scenes/newPlayer.js')
 const { deletePlayerScene } = require('./scenes/deletePlayer.js')
 const { showPlayerScene } = require('./scenes/showPlayer.js')
+const { editPlayerScene } = require('./scenes/editPlayer.js')
+
 const { rollScene } = require('./scenes/roll.js')
 
-const stage = new Stage([newPlayerScene, deletePlayerScene, showPlayerScene, rollScene])
+const stage = new Stage([newPlayerScene, deletePlayerScene, showPlayerScene, editPlayerScene, rollScene])
 bot.use(session())
 bot.use(stage.middleware())
-// bot.command('x', enter('setup'))
-/*
-bot.command('set', ctx => {
-  storage.set(ctx.update.message.chat.id, ctx.update.message.text).then(() => {
-    ctx.reply('Done')
-  })
-})
-
-bot.command('get', ctx => {
-  let data = storage.get(ctx.update.message.chat.id)
-  ctx.reply(JSON.stringify(data))
-}) */
 
 bot.command('start', (ctx, next) => {
   leave()
