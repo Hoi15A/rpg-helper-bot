@@ -1,3 +1,6 @@
+# Temp image storage dir
+tmp
+
 # Config file
 config.yml
 

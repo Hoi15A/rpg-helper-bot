@@ -6,7 +6,7 @@ const Stage = require('telegraf/stage')
 const { leave } = Stage
 
 const deletePlayerScene = new Scene('deletePlayer')
-deletePlayerScene.enter((ctx, next) => {
+deletePlayerScene.enter((ctx) => {
   console.log(ctx)
   let players = storage.get(ctx.update.callback_query.message.chat.id)
 

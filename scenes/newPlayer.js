@@ -1,3 +1,4 @@
+const base = require('../lib/base.js')
 const storage = require('../lib/storage.js')
 
 const Markup = require('telegraf/markup')
@@ -15,7 +16,7 @@ newPlayerScene.enter((ctx) => {
     'race': '', // Dragonborn, Dwarf, Elf, Gnome, Half-Elf, Halfling, Half-Orc, Human, Tiefling
     'class': '', // Barbarian, Bard, Cleric, Druid, Fighter, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard
     'level': 0, // 1-99
-    // 'health'
+    'health': 0,
     // 'gold'
     'armor': 0,
     'initiative': 0,
@@ -68,10 +69,10 @@ newPlayerScene.command('cancel', (ctx) => {
 newPlayerScene.on('text', (ctx) => {
   switch (ctx.session.nextEntry) {
     case 'name':
-      if (ctx.message.text.length <= 20) {
+      if (ctx.message.text.length <= 16) {
         ctx.session.newPlayer.name = ctx.message.text
         ctx.session.nextEntry = ''
-        ctx.reply('Hello ' + ctx.message.text + '!\nSelect a Race:',
+        ctx.replyWithMarkdown('Hello **' + ctx.message.text + '**! Welcome to my Inn.\n\nSelect a Race:',
           Markup.inlineKeyboard([
             [
               Markup.callbackButton('Dragonborn', 'race-dragonborn'),
@@ -91,21 +92,22 @@ newPlayerScene.on('text', (ctx) => {
           ]).extra()
         )
       } else {
-        ctx.replyWithMarkdown('Sorry, that name is a bit too long.\nPlease enter a shorter one:')
+        ctx.replyWithMarkdown('Sorry, that name is a bit too long.\nPlease enter one shorter than 16 characters:')
       }
       break
     case 'lvlEtc':
-      let lvlEtcValidator = RegExp('^([0-9]{1,2} ){3}([0-9]{1,2})$', 'm')
+      let lvlEtcValidator = RegExp('^([0-9]{1,2} ){4}([0-9]{1,2})$', 'm')
       if (lvlEtcValidator.test(ctx.message.text)) {
         let lvlEtcValues = ctx.message.text.split(' ')
         ctx.session.newPlayer.level = lvlEtcValues[0]
         ctx.session.newPlayer.armor = lvlEtcValues[1]
         ctx.session.newPlayer.initiative = lvlEtcValues[2]
         ctx.session.newPlayer.speed = lvlEtcValues[3]
+        ctx.session.newPlayer.health = lvlEtcValues[4]
         ctx.replyWithMarkdown('Nice!\n\nNext please enter the following base stat values separated by spaces:\n1. Strength\n2. Dexterity\n3. Constitution\n4. Intelligence\n5. Wisdom\n6. Charisma\n\nExample: `3 4 2 11 9 3`')
         ctx.session.nextEntry = 'baseStats'
       } else {
-        ctx.replyWithMarkdown('Sorry your message was invalid. Please send your message in the following format:\n`1 12 5 3`').then(x => {
+        ctx.replyWithMarkdown('Sorry your message was invalid. Please send your message in the following format:\n`1 12 5 3 26`').then(x => {
           setTimeout(function () {
             ctx.tg.deleteMessage(x.chat.id, x.message_id)
           }, 20000)
@@ -168,20 +170,10 @@ newPlayerScene.on('text', (ctx) => {
         }
         storage.set(ctx.update.message.chat.id, data).then(() => {
           ctx.replyWithMarkdown('That\'s it!')
+          base.showMainMenu(ctx)
           leave()
-          ctx.reply('Main Menu: ',
-            Markup.inlineKeyboard([
-              [
-                Markup.callbackButton('Show Player', 'p1'),
-                Markup.callbackButton('Edit Player', 'other'),
-                Markup.callbackButton('New Player', 'newPlayer')
-              ],
-              [
-                Markup.callbackButton('Roll 🎲', 'roll'),
-                Markup.callbackButton('Search for stuff', 'other')
-              ]
-            ]).extra()
-          )
+        }).catch(e => {
+          console.error('Err creating player:', e)
         })
       } else {
         ctx.replyWithMarkdown('Its nice that you have so much to say, but sadly its above the 4000 character limit. Please shorten your text:').then(x => {
@@ -237,7 +229,7 @@ newPlayerScene.action(/class-.+/, (ctx) => {
   ctx.session.newPlayer.class = match
   ctx.answerCbQuery('Class selected.')
 
-  ctx.replyWithMarkdown('Class selected!\n\nPlease enter the following values all at once separated by spaces:\n1. Level\n2. Armor\n3. Initiative\n4. Speed\n\nExample: `1 12 5 3`')
+  ctx.replyWithMarkdown('Class selected!\n\nPlease enter the following values all at once separated by spaces:\n1. Level\n2. Armor\n3. Initiative\n4. Speed\n5. Health\n\nExample: `1 12 5 3 26`')
   ctx.session.nextEntry = 'lvlEtc'
 })
 

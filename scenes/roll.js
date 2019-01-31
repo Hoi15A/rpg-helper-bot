@@ -10,14 +10,15 @@ rollScene.enter((ctx, next) => {
   return ctx.reply('Roll a die:',
     Markup.inlineKeyboard([
       [
+        Markup.callbackButton('D00', 'd00'),
         Markup.callbackButton('D4', 'd4'),
         Markup.callbackButton('D6', 'd6'),
         Markup.callbackButton('D8', 'd8')
       ],
       [
+        Markup.callbackButton('D10', 'd10'),
         Markup.callbackButton('D12', 'd12'),
-        Markup.callbackButton('D20', 'd20'),
-        Markup.callbackButton('D1k', 'd1000')
+        Markup.callbackButton('D20', 'd20')
       ]
     ]).extra()
   )
@@ -36,6 +37,17 @@ function basicRollAction (ctx, num) {
 }
 
 // TODO: (very low priority) /d[0-9]+/ instead of this copy paste shit
+rollScene.action('d00', (ctx, next) => {
+  ctx.deleteMessage()
+  ctx.answerCbQuery('Rolling...')
+  let roll = dice.roll('percentile', 1, null)[0]
+  ctx.replyWithMarkdown('Rolled a D00: `' + roll + '`').then(x => {
+    setTimeout(function () {
+      ctx.tg.deleteMessage(x.chat.id, x.message_id)
+    }, 20000)
+  })
+  leave()
+})
 rollScene.action('d4', (ctx, next) => {
   basicRollAction(ctx, 4)
 })
@@ -45,14 +57,22 @@ rollScene.action('d6', (ctx, next) => {
 rollScene.action('d8', (ctx, next) => {
   basicRollAction(ctx, 8)
 })
+rollScene.action('d10', (ctx, next) => {
+  ctx.deleteMessage()
+  ctx.answerCbQuery('Rolling...')
+  let roll = dice.roll('standard', 0, 9)[0]
+  ctx.replyWithMarkdown('Rolled a D10: `' + roll + '`').then(x => {
+    setTimeout(function () {
+      ctx.tg.deleteMessage(x.chat.id, x.message_id)
+    }, 20000)
+  })
+  leave()
+})
 rollScene.action('d12', (ctx, next) => {
   basicRollAction(ctx, 12)
 })
 rollScene.action('d20', (ctx, next) => {
   basicRollAction(ctx, 20)
-})
-rollScene.action('d1000', (ctx, next) => {
-  basicRollAction(ctx, 1000)
 })
 
 rollScene.command('cancel', leave())

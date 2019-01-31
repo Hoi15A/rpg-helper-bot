@@ -3,11 +3,16 @@ const webServer = require('./lib/webserver.js')
 const webhookPath = '/wh-' + require('crypto').randomBytes(8).toString('hex')
 const config = base.getConfig()
 
+const dir = './tmp'
+const fs = require('fs')
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir)
+}
+
 const Telegraf = require('telegraf')
-const Markup = require('telegraf/markup')
 const session = require('telegraf/session')
 const Stage = require('telegraf/stage')
-// const { enter } = Stage
+const { leave } = Stage
 
 const bot = new Telegraf(config.telegram.token)
 
@@ -16,10 +21,11 @@ bot.telegram.getMe().then((botInfo) => {
 })
 
 const { newPlayerScene } = require('./scenes/newPlayer.js')
-const { rollScene } = require('./scenes/roll.js')
 const { deletePlayerScene } = require('./scenes/deletePlayer.js')
+const { showPlayerScene } = require('./scenes/showPlayer.js')
+const { rollScene } = require('./scenes/roll.js')
 
-const stage = new Stage([newPlayerScene, deletePlayerScene, rollScene])
+const stage = new Stage([newPlayerScene, deletePlayerScene, showPlayerScene, rollScene])
 bot.use(session())
 bot.use(stage.middleware())
 // bot.command('x', enter('setup'))
@@ -36,22 +42,17 @@ bot.command('get', ctx => {
 }) */
 
 bot.command('start', (ctx, next) => {
-  return ctx.reply('Main Menu: ',
-    Markup.inlineKeyboard([
-      [
-        Markup.callbackButton('Show Player', 'p1'),
-        Markup.callbackButton('Edit Player', 'other')
-      ],
-      [
-        Markup.callbackButton('New Player', 'newPlayer'),
-        Markup.callbackButton('Delete Player', 'deletePlayer')
-      ],
-      [
-        Markup.callbackButton('Roll 🎲', 'roll'),
-        Markup.callbackButton('Search for stuff', 'other')
-      ]
-    ]).extra()
-  )
+  leave()
+  return base.showMainMenu(ctx)
+})
+
+bot.command('menu', (ctx, next) => {
+  leave()
+  return base.showMainMenu(ctx)
+})
+
+bot.command('github', (ctx, next) => {
+  return ctx.replyWithMarkdown('[Github Repository](https://github.com/Hoi15A/rpg-helper-bot)')
 })
 
 bot.action('roll', (ctx, next) => {
@@ -62,6 +63,11 @@ bot.action('roll', (ctx, next) => {
 bot.action('newPlayer', (ctx, next) => {
   ctx.answerCbQuery('Entering Setup')
   ctx.scene.enter('newPlayer')
+})
+
+bot.action('showPlayer', (ctx, next) => {
+  ctx.answerCbQuery('Entering Show')
+  ctx.scene.enter('showPlayer')
 })
 
 bot.action('deletePlayer', (ctx, next) => {
