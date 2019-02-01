@@ -60,6 +60,11 @@ bot.action('showPlayer', (ctx, next) => {
   ctx.scene.enter('showPlayer')
 })
 
+bot.action('editPlayer', (ctx, next) => {
+  ctx.answerCbQuery('Entering Edit')
+  ctx.scene.enter('editPlayer')
+})
+
 bot.action('deletePlayer', (ctx, next) => {
   ctx.answerCbQuery('Entering Delete')
   ctx.scene.enter('deletePlayer')
