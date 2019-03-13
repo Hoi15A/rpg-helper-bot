@@ -58,15 +58,7 @@ rollScene.action('d8', (ctx, next) => {
   basicRollAction(ctx, 8)
 })
 rollScene.action('d10', (ctx, next) => {
-  ctx.deleteMessage()
-  ctx.answerCbQuery('Rolling...')
-  let roll = dice.roll('standard', 0, 9)[0]
-  ctx.replyWithMarkdown('Rolled a D10: `' + roll + '`').then(x => {
-    setTimeout(function () {
-      ctx.tg.deleteMessage(x.chat.id, x.message_id)
-    }, 20000)
-  })
-  leave()
+  basicRollAction(ctx, 10)
 })
 rollScene.action('d12', (ctx, next) => {
   basicRollAction(ctx, 12)
